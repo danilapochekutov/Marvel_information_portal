@@ -1,0 +1,16 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "extends": ["prettier"],
+  "plugins": ["prettier"],
+  "prettier/prettier": "error",
+  "arrow-body-style": "off",
+  "prefer-arrow-callback": "off",
+  "useTabs": true,
+  "tabWidth": 4,
+  "jsxSingleQuote": true,
+  "max-len": ["error", 240, 2],
+  "printWidth": 100,
+  "proseWrap": "preserve",
+  "bracketSpacing": false
+}
