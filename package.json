@@ -8,8 +8,6 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "formik": "^2.4.5",
-    "gh": "^2.8.9",
-    "pages": "^0.0.16",
     "prop-types": "^15.8.1",
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
@@ -23,6 +21,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -45,7 +45,11 @@
     ]
   },
   "devDependencies": {
+    "gh-pages": "^6.1.1",
     "prettier": "3.0.3",
     "sass": "^1.38.0"
-  }
+  },
+  "main": "index.js",
+  "author": "",
+  "license": "ISC"
 }
