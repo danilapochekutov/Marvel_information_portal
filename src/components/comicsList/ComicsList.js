@@ -7,31 +7,45 @@ import {CSSTransition, TransitionGroup} from "react-transition-group";
 
 import "./comicsList.scss";
 
+const setContent = (process, Component, newItemloading) => {
+	switch (process) {
+		case "waiting":
+			return <Spinner />;
+		case "loading":
+			return newItemloading ? <Component /> : <Spinner />;
+		case "confirmed":
+			return <Component />;
+		case "error":
+			return <ErrorMessage />;
+		default:
+			throw new Error("Unexpected process state");
+	}
+};
+
 const ComicsList = () => {
 	const [comicsList, setComicsList] = useState([]);
 	const [newItemloading, setNewItemloading] = useState(false);
-	const [offset, setOffset] = useState(200);
 	const [comicsEnded, setComicsEnded] = useState(false);
+	const [offset, setOffset] = useState(200);
 
-	const {loading, error, getAllComics} = useMarvelService();
+	const {getAllComics, process, setProcess} = useMarvelService();
 
 	useEffect(() => {
 		const storedComicsList = localStorage.getItem("comicsList");
 		const storedOffset = localStorage.getItem("offset");
 
 		if (storedComicsList) {
-			// Если есть сохраненный comicsList, восстанавливаем его
 			setComicsList(JSON.parse(storedComicsList));
+			setProcess("loading");
 		}
 
 		if (storedOffset) {
-			// Если есть сохраненный offset, восстанавливаем его
 			setOffset(parseInt(storedOffset, 10));
+			setProcess("confirmed");
 		} else {
 			onRequest(offset, true);
 		}
 
-		// Запускаем таймер на 10 минут для обнуления хранилища
 		setTimeout(
 			() => {
 				localStorage.removeItem("comicsList");
@@ -43,21 +57,24 @@ const ComicsList = () => {
 
 	const onRequest = (offset, initial) => {
 		initial ? setNewItemloading(false) : setNewItemloading(true);
-		getAllComics(offset).then(onCharListLoaded);
+
+		getAllComics(offset)
+			.then(onComicsListLoaded)
+			.then(() => setProcess("confirmed"));
 	};
 
-	const onCharListLoaded = (newComicsList) => {
+	const onComicsListLoaded = (newComicsList) => {
 		let ended = false;
-		if (newComicsList.lenght < 8) {
+		if (newComicsList.length < 8) {
 			ended = true;
 		}
 
 		const updatedComicsList = [...comicsList, ...newComicsList];
+		localStorage.setItem("comicsList", JSON.stringify(updatedComicsList));
+		localStorage.setItem("offset", offset + 8);
 		setComicsList(updatedComicsList);
 		setNewItemloading(false);
 		setOffset((offset) => offset + 8);
-		localStorage.setItem("comicsList", JSON.stringify(updatedComicsList));
-		localStorage.setItem("offset", offset + 8);
 		setComicsEnded((comicsEnded) => ended);
 	};
 
@@ -80,19 +97,16 @@ const ComicsList = () => {
 			);
 		});
 
-		return <TransitionGroup className='comics__grid'>{items}</TransitionGroup>;
+		return (
+			<ul className='comics__grid'>
+				<TransitionGroup component={null}>{items}</TransitionGroup>
+			</ul>
+		);
 	}
-
-	const items = renderItems(comicsList);
-
-	const errorMessage = error ? <ErrorMessage /> : null;
-	const spinner = loading && !newItemloading ? <Spinner /> : null;
 
 	return (
 		<div className='comics__list'>
-			{errorMessage}
-			{spinner}
-			{items}
+			{setContent(process, () => renderItems(comicsList), newItemloading)}
 
 			<button
 				className='button button__main button__long'
